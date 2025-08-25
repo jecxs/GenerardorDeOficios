@@ -1,0 +1,75 @@
+{
+  "name": "generador-oficios",
+  "version": "1.0.0",
+  "main": "main.js",
+  "description": "Sistema automatizado de generación de oficios y envío de correos electrónicos con plantillas DOCX y datos de Excel",
+  "author": "Tu Nombre <tu@email.com>",
+  "license": "ISC",
+  "keywords": [
+    "electron",
+    "docx",
+    "pdf",
+    "email",
+    "office",
+    "automation"
+  ],
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-win64": "electron-builder --win --x64",
+    "build-win32": "electron-builder --win --ia32",
+    "dist": "electron-builder --publish=never",
+    "dist-all": "electron-builder --win --mac --linux",
+    "clean": "rimraf dist",
+    "rebuild": "electron-rebuild"
+  },
+  "build": {
+    "appId": "com.generador.oficios",
+    "productName": "Generador de Oficios",
+    "copyright": "Copyright © 2025",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/**/*",
+      "!build/**/*",
+      "!*.md",
+      "!.gitignore",
+      "!.git/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Generador de Oficios",
+      "runAfterFinish": true,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^37.3.0",
+    "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "docxtemplater": "^3.65.3",
+    "file-saver": "^2.0.5",
+    "libreoffice-convert": "^1.6.1",
+    "mammoth": "^1.10.0",
+    "nodemailer": "^7.0.5",
+    "pdf-lib": "^1.17.1",
+    "pizzip": "^3.2.0",
+    "xlsx": "^0.18.5"
+  }
+}

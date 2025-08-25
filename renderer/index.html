@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Oficios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+<!-- Header -->
+<header class="bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center space-x-3">
+            <div class="bg-white/20 p-2 rounded-lg">
+                <i data-lucide="file-text" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold">Generador de Oficios</h1>
+                <p class="text-primary-100 text-sm">Sistema automatizado de documentos</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Columna Principal -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- Configuración Base -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-blue-100 p-2 rounded-lg">
+                            <i data-lucide="folder" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">Configuración Base</h2>
+                    </div>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <button id="btnBaseFolder" class="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i data-lucide="folder-open" class="w-4 h-4"></i>
+                            <span>Seleccionar Carpeta Base</span>
+                        </button>
+                        <div class="mt-2">
+                            <div class="flex items-center space-x-2 text-sm">
+                                <i data-lucide="folder" class="w-4 h-4 text-gray-400"></i>
+                                <span class="font-medium text-gray-700">Carpeta:</span>
+                                <span id="baseFolder" class="text-gray-600">Ninguna seleccionada</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1 flex items-center space-x-1">
+                                <i data-lucide="info" class="w-3 h-3"></i>
+                                <span>La aplicación recordará tu última carpeta seleccionada</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button id="btnExcel" class="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                            <span>Cargar Excel</span>
+                        </button>
+                        <div class="mt-2">
+                            <div class="flex items-center space-x-2 text-sm">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-gray-400"></i>
+                                <span class="font-medium text-gray-700">Excel:</span>
+                                <span id="excelFile" class="text-gray-600">Ninguno seleccionado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista Previa Excel -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-green-100 p-2 rounded-lg">
+                            <i data-lucide="eye" class="w-5 h-5 text-green-600"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">Previsualización de Excel</h2>
+                        <span class="text-sm text-gray-500">(primeras 5 filas)</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table id="excelPreview" class="min-w-full divide-y divide-gray-200">
+                            <thead id="previewHeaders" class="bg-gray-50"></thead>
+                            <tbody id="previewBody" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                        <div id="noPreview" class="text-center py-8 text-gray-500">
+                            <i data-lucide="table" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                            <p>No hay previsualización disponible aún</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plantillas DOCX -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-purple-100 p-2 rounded-lg">
+                                <i data-lucide="file-text" class="w-5 h-5 text-purple-600"></i>
+                            </div>
+                            <h2 class="text-lg font-semibold text-gray-900">Plantillas DOCX</h2>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-500">Total:</span>
+                            <span id="templateCount" class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm font-medium">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex space-x-3 mb-4">
+                        <button id="btnDocx" class="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Agregar Plantilla</span>
+                        </button>
+                        <button id="btnClearTemplates" class="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <span>Limpiar Todo</span>
+                        </button>
+                    </div>
+
+                    <div id="templatesList">
+                        <div id="noTemplates" class="text-center py-6 text-gray-500">
+                            <i data-lucide="file-plus" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                            <p>No hay plantillas seleccionadas</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-purple-50 rounded-lg">
+                        <div class="flex items-start space-x-2">
+                            <i data-lucide="lightbulb" class="w-4 h-4 text-purple-600 mt-0.5"></i>
+                            <p class="text-xs text-purple-700">Se generará un PDF por cada plantilla para cada persona</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generación -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-orange-100 p-2 rounded-lg">
+                            <i data-lucide="settings" class="w-5 h-5 text-orange-600"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">Generación de PDFs</h2>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <button id="btnGenerate" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg">
+                        <div class="flex items-center justify-center space-x-2">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                            <span>Generar PDFs</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Columna Lateral -->
+        <div class="space-y-6">
+
+            <!-- Envío de Correos -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-blue-100 p-2 rounded-lg">
+                            <i data-lucide="mail" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">Envío de Correos</h2>
+                    </div>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label for="emailColumn" class="block text-sm font-medium text-gray-700 mb-2">
+                            Columna de correos:
+                        </label>
+                        <select id="emailColumn" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Seleccionar columna...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="emailSubject" class="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-1">
+                            <i data-lucide="tag" class="w-4 h-4"></i>
+                            <span>Asunto:</span>
+                        </label>
+                        <input type="text" id="emailSubject" placeholder="Asunto del correo"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="emailBody" class="block text-sm font-medium text-gray-700 mb-2 flex items-center space-x-1">
+                            <i data-lucide="message-square" class="w-4 h-4"></i>
+                            <span>Cuerpo del correo:</span>
+                        </label>
+                        <textarea id="emailBody" rows="4" placeholder="Escribe el cuerpo del mensaje..."
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+
+                    <button id="btnGenerateAndSend" class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg">
+                        <div class="flex items-center justify-center space-x-2">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                            <span>Generar y Enviar Todo</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Configuración SMTP -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-indigo-100 p-2 rounded-lg">
+                            <i data-lucide="server" class="w-5 h-5 text-indigo-600"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-900">Configuración SMTP</h2>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 flex items-center space-x-1">
+                        <i data-lucide="save" class="w-3 h-3"></i>
+                        <span>Tu configuración SMTP se guardará automáticamente</span>
+                    </p>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label for="smtpHost" class="block text-sm font-medium text-gray-700 mb-2">Servidor SMTP:</label>
+                        <input type="text" id="smtpHost" placeholder="smtp.gmail.com"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="smtpPort" class="block text-sm font-medium text-gray-700 mb-2">Puerto:</label>
+                            <input type="number" id="smtpPort" value="587"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="smtpSecure" class="block text-sm font-medium text-gray-700 mb-2">Seguridad:</label>
+                            <select id="smtpSecure" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="false" selected>STARTTLS (587)</option>
+                                <option value="true">SSL/TLS (465)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="smtpUser" class="block text-sm font-medium text-gray-700 mb-2">Correo remitente:</label>
+                        <input type="email" id="smtpUser" placeholder="tu@correo.com"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="smtpPass" class="block text-sm font-medium text-gray-700 mb-2">Contraseña / App Password:</label>
+                        <input type="password" id="smtpPass" placeholder="••••••••"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <button id="btnSaveSMTP" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        <div class="flex items-center justify-center space-x-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span>Guardar Configuración</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PDFs Extra -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-red-100 p-2 rounded-lg">
+                                <i data-lucide="paperclip" class="w-5 h-5 text-red-600"></i>
+                            </div>
+                            <h2 class="text-lg font-semibold text-gray-900">PDFs Extra</h2>
+                        </div>
+                        <span id="extraPdfCount" class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-sm font-medium">0</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 flex items-center space-x-1">
+                        <i data-lucide="lightbulb" class="w-3 h-3"></i>
+                        <span>Estos PDFs se adjuntarán a TODOS los correos</span>
+                    </p>
+                </div>
+                <div class="p-6">
+                    <div class="flex space-x-2 mb-4">
+                        <button id="btnAddExtraPdf" class="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors text-sm">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Agregar PDFs</span>
+                        </button>
+                        <button id="btnClearExtraPdfs" class="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg transition-colors text-sm">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <span>Limpiar</span>
+                        </button>
+                    </div>
+
+                    <div id="extraPdfsList">
+                        <div id="noExtraPdfs" class="text-center py-4 text-gray-500">
+                            <i data-lucide="paperclip" class="w-8 h-8 mx-auto mb-2 text-gray-300"></i>
+                            <p class="text-sm">No hay PDFs extra seleccionados</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-yellow-50 rounded-lg">
+                        <div class="space-y-1 text-xs text-yellow-700">
+                            <p class="flex items-start space-x-1">
+                                <i data-lucide="alert-triangle" class="w-3 h-3 mt-0.5"></i>
+                                <span><strong>Importante:</strong> Estos archivos se adjuntarán a todos los correos.</span>
+                            </p>
+                            <p class="flex items-start space-x-1">
+                                <i data-lucide="mail" class="w-3 h-3 mt-0.5"></i>
+                                <span>Si envías a 100 personas, cada una recibirá todos estos PDFs adicionales.</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Terminal Sticky (Mini versión que aparece al hacer scroll) -->
+    <div id="stickyTerminal" class="fixed top-4 right-4 w-96 bg-gray-900 rounded-lg shadow-2xl border border-gray-600 z-50 opacity-0 transform translate-y-[-20px] transition-all duration-300 pointer-events-none">
+        <div class="px-4 py-3 border-b border-gray-700 bg-gray-800 rounded-t-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-green-500 p-1.5 rounded">
+                        <i data-lucide="terminal" class="w-3 h-3 text-white"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-white">Estado del Sistema</h3>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <!-- Botones de control -->
+                    <button id="minimizeStickyTerminal" class="text-gray-400 hover:text-white transition-colors p-1">
+                        <i data-lucide="minimize-2" class="w-3 h-3"></i>
+                    </button>
+                    <button id="expandStickyTerminal" class="text-gray-400 hover:text-white transition-colors p-1">
+                        <i data-lucide="maximize-2" class="w-3 h-3"></i>
+                    </button>
+                    <button id="closeStickyTerminal" class="text-gray-400 hover:text-red-400 transition-colors p-1">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="p-3">
+            <div class="bg-gray-800 rounded p-2 max-h-32 overflow-y-auto">
+                <pre id="stickyLog" class="text-white font-mono text-xs whitespace-pre-wrap leading-relaxed">Listo para comenzar...</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terminal Principal (versión original mejorada) -->
+    <div class="mt-8 bg-gray-900 rounded-xl shadow-lg overflow-hidden" id="mainTerminal">
+        <div class="px-6 py-4 border-b border-gray-700 bg-gray-800">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-green-500 p-2 rounded-lg">
+                        <i data-lucide="terminal" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold text-white">Estado del Sistema</h2>
+                    <div class="flex space-x-2">
+                        <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    </div>
+                </div>
+                <!-- Indicador de actividad -->
+                <div class="flex items-center space-x-3">
+                    <div id="activityIndicator" class="hidden flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+                        <span class="text-green-400 text-sm font-medium">Procesando...</span>
+                    </div>
+                    <!-- Controles del terminal -->
+                    <div class="flex items-center space-x-1 bg-gray-700 rounded-lg p-1">
+                        <button id="clearLog" class="text-gray-400 hover:text-white transition-colors p-1.5 rounded hover:bg-gray-600" title="Limpiar log">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                        <button id="copyLog" class="text-gray-400 hover:text-white transition-colors p-1.5 rounded hover:bg-gray-600" title="Copiar log">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                        <button id="toggleStickyMode" class="text-gray-400 hover:text-green-400 transition-colors p-1.5 rounded hover:bg-gray-600" title="Activar modo sticky">
+                            <i data-lucide="pin" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="relative">
+                <pre id="log" class="text-white font-mono text-sm whitespace-pre-wrap overflow-x-auto min-h-[120px] max-h-96 overflow-y-auto bg-gray-800 p-4 rounded-lg border border-gray-700 leading-relaxed">Listo para comenzar. Selecciona una carpeta base para empezar.</pre>
+                <!-- Indicador de scroll -->
+                <div id="scrollIndicator" class="absolute bottom-2 right-2 bg-gray-700 text-gray-300 px-2 py-1 rounded text-xs opacity-0 transition-opacity duration-200">
+                    <i data-lucide="arrow-down" class="w-3 h-3 inline mr-1"></i>
+                    Nuevo mensaje
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    // Inicializar iconos de Lucide
+    lucide.createIcons();
+
+    // Variables globales
+    const baseFolderEl = document.getElementById("baseFolder");
+    const excelFileEl = document.getElementById("excelFile");
+    const logEl = document.getElementById("log");
+
+    let baseFolder = null;
+    let excelFile = null;
+    let libreOfficeStatus = { available: false, path: null, method: null };
+    let extraFiles = [];
+    let appConfig = null;
+    let selectedTemplates = [];
+    let selectedExtraPdfs = [];
+
+    // Verificar LibreOffice al cargar la página
+    window.addEventListener('DOMContentLoaded', async () => {
+
+        await loadAppConfig();
+        await checkLibreOfficeStatus();
+        await autoLoadBaseFolder();
+
+        const stickyManager = new StickyTerminalManager();
+    });
+
+    // Función para cargar configuración de la aplicación
+    async function loadAppConfig() {
+        try {
+            appConfig = await window.electronAPI.loadConfig();
+            console.log("📂 Configuración cargada:", appConfig);
+
+            if (appConfig.smtpConfig) {
+                loadSmtpConfigToUI(appConfig.smtpConfig);
+            }
+        } catch (error) {
+            console.error("Error cargando configuración:", error);
+            appConfig = { baseFolder: null, smtpConfig: null };
+        }
+    }
+
+    function loadSmtpConfigToUI(smtpConfig) {
+        document.getElementById("smtpHost").value = smtpConfig.host || "";
+        document.getElementById("smtpPort").value = smtpConfig.port || 587;
+        document.getElementById("smtpSecure").value = String(smtpConfig.secure || false);
+        document.getElementById("smtpUser").value = smtpConfig.user || "";
+        document.getElementById("smtpPass").value = smtpConfig.pass || "";
+
+        logEl.textContent = `✅ Configuración SMTP cargada automáticamente:\nServidor: ${smtpConfig.host}:${smtpConfig.port}\nUsuario: ${smtpConfig.user}`;
+    }
+
+    async function autoLoadBaseFolder() {
+        if (appConfig && appConfig.baseFolder) {
+            logEl.textContent = "🔍 Verificando última carpeta base utilizada...";
+
+            try {
+                const result = await window.electronAPI.loadSavedFolder();
+
+                if (result && result.basePath) {
+                    baseFolder = result.basePath;
+                    baseFolderEl.textContent = baseFolder;
+
+                    logEl.textContent = `✅ Carpeta base cargada automáticamente: ${baseFolder}`;
+                    if (result.created && result.created.length > 0) {
+                        logEl.textContent += `\n📁 Subcarpetas verificadas: ${result.created.join(", ")}`;
+                    }
+
+                    // Efecto visual de carga automática
+                    baseFolderEl.classList.add('bg-green-100', 'px-2', 'py-1', 'rounded-lg', 'border', 'border-green-200');
+
+                    setTimeout(() => {
+                        baseFolderEl.classList.remove('bg-green-100', 'px-2', 'py-1', 'rounded-lg', 'border', 'border-green-200');
+                    }, 3000);
+
+                } else {
+                    logEl.textContent = `📂 Listo para comenzar. Selecciona una carpeta base.`;
+                }
+            } catch (error) {
+                console.error("Error cargando carpeta base:", error);
+                logEl.textContent = "📂 Listo para comenzar. Selecciona una carpeta base.";
+            }
+        } else {
+            logEl.textContent = "📂 Listo para comenzar. Selecciona una carpeta base.";
+        }
+    }
+
+    async function checkLibreOfficeStatus() {
+        logEl.textContent = "🔍 Verificando LibreOffice...";
+        try {
+            libreOfficeStatus = await window.electronAPI.checkLibreOffice();
+            updateLibreOfficeUI();
+        } catch (error) {
+            logEl.textContent = "⚠️ Error verificando LibreOffice.";
+            console.error("Error verificando LibreOffice:", error);
+        }
+    }
+
+    function updateLibreOfficeUI() {
+        const generateBtn = document.getElementById("btnGenerate");
+
+        if (libreOfficeStatus.available) {
+            logEl.textContent = `✅ LibreOffice detectado correctamente!\n` +
+                `📍 Método: ${libreOfficeStatus.method}\n` +
+                `🎯 Los PDFs mantendrán el formato original de tu plantilla.`;
+
+            generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            generateBtn.classList.add('hover:scale-105');
+        } else {
+            logEl.textContent = `❌ LibreOffice no detectado automáticamente.\n\n` +
+                `🔧 Opciones:\n` +
+                `1. Instalar LibreOffice desde: https://www.libreoffice.org/\n` +
+                `2. O hacer clic en "Configurar LibreOffice" para seleccionarlo manualmente.`;
+
+            showLibreOfficeConfigButton();
+        }
+    }
+
+    function showLibreOfficeConfigButton() {
+        const existingBtn = document.getElementById("btnConfigLibre");
+        if (existingBtn) return;
+
+        const configSection = document.createElement("div");
+        configSection.className = "mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-6";
+
+        configSection.innerHTML = `
+                <div class="flex items-start space-x-4">
+                    <div class="bg-yellow-100 p-3 rounded-lg">
+                        <i data-lucide="settings" class="w-6 h-6 text-yellow-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-yellow-800 mb-2">Configuración de LibreOffice Requerida</h3>
+                        <p class="text-sm text-yellow-700 mb-4">
+                            LibreOffice es necesario para generar PDFs con formato original.
+                            Busca el archivo <code class="bg-yellow-200 px-1 rounded">soffice.exe</code> en:
+                        </p>
+                        <p class="text-xs text-yellow-600 mb-4 font-mono bg-yellow-100 p-2 rounded">
+                            C:\\Program Files\\LibreOffice\\program\\soffice.exe
+                        </p>
+                        <button id="btnConfigLibre" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2">
+                            <i data-lucide="tool" class="w-4 h-4"></i>
+                            <span>Configurar LibreOffice manualmente</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+        logEl.parentNode.insertBefore(configSection, logEl.nextSibling);
+        lucide.createIcons();
+
+        document.getElementById("btnConfigLibre").addEventListener("click", async () => {
+            const btn = document.getElementById("btnConfigLibre");
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Buscando...</span>';
+            lucide.createIcons();
+
+            try {
+                const result = await window.electronAPI.selectLibreOffice();
+
+                if (result.success) {
+                    libreOfficeStatus = {
+                        available: true,
+                        path: result.path,
+                        method: 'manual'
+                    };
+
+                    logEl.textContent = `✅ LibreOffice configurado correctamente!\n` +
+                        `📍 Ubicación: ${result.path}\n` +
+                        `🎯 Ahora puedes generar PDFs con formato original.`;
+
+                    configSection.style.display = "none";
+
+                    const generateBtn = document.getElementById("btnGenerate");
+                    generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    generateBtn.classList.add('hover:scale-105');
+
+                } else {
+                    logEl.textContent = `❌ Error configurando LibreOffice:\n${result.error || "Archivo no válido"}\n\n` +
+                        `💡 Asegúrate de seleccionar el archivo "soffice.exe" correcto.`;
+
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="tool" class="w-4 h-4"></i><span>Configurar LibreOffice manualmente</span>';
+                    lucide.createIcons();
+                }
+            } catch (error) {
+                logEl.textContent = `❌ Error inesperado: ${error.message}`;
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="tool" class="w-4 h-4"></i><span>Configurar LibreOffice manualmente</span>';
+                lucide.createIcons();
+            }
+        });
+    }
+
+    function updateExtraPdfsUI() {
+        const pdfsList = document.getElementById("extraPdfsList");
+        const pdfCount = document.getElementById("extraPdfCount");
+
+        pdfCount.textContent = selectedExtraPdfs.length;
+
+        if (selectedExtraPdfs.length === 0) {
+            pdfsList.innerHTML = `
+                    <div id="noExtraPdfs" class="text-center py-4 text-gray-500">
+                        <i data-lucide="paperclip" class="w-8 h-8 mx-auto mb-2 text-gray-300"></i>
+                        <p class="text-sm">No hay PDFs extra seleccionados</p>
+                    </div>
+                `;
+            lucide.createIcons();
+            extraFiles = [];
+            return;
+        }
+
+        let listHTML = '<div class="space-y-2">';
+
+        selectedExtraPdfs.forEach((pdfPath, index) => {
+            const fileName = pdfPath.split(/[\\/]/).pop();
+            listHTML += `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex items-center space-x-2 flex-1 min-w-0">
+                            <i data-lucide="file-text" class="w-4 h-4 text-red-600 flex-shrink-0"></i>
+                            <span class="font-medium text-gray-900 truncate">${fileName}</span>
+                        </div>
+                        <button onclick="removeExtraPdf(${index})"
+                                class="ml-2 bg-red-100 hover:bg-red-200 text-red-600 p-1.5 rounded-lg transition-colors flex-shrink-0">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                `;
+        });
+
+        listHTML += '</div>';
+        pdfsList.innerHTML = listHTML;
+        lucide.createIcons();
+
+        extraFiles = [...selectedExtraPdfs];
+    }
+
+    function removeExtraPdf(index) {
+        const removedFile = selectedExtraPdfs[index];
+        selectedExtraPdfs.splice(index, 1);
+        updateExtraPdfsUI();
+
+        const fileName = removedFile.split(/[\\/]/).pop();
+        logEl.textContent = `🗑️ PDF eliminado: ${fileName}\nTotal: ${selectedExtraPdfs.length} PDFs extra`;
+
+        if (selectedExtraPdfs.length === 0) {
+            logEl.textContent += "\n📎 Los PDFs extra se adjuntarán a todos los correos enviados.";
+        }
+    }
+
+    function clearAllExtraPdfs() {
+        if (selectedExtraPdfs.length === 0) {
+            logEl.textContent = "⚠️ No hay PDFs extra para limpiar.";
+            return;
+        }
+
+        const confirmed = confirm(`¿Estás seguro de eliminar todos los ${selectedExtraPdfs.length} PDFs extra seleccionados?`);
+        if (confirmed) {
+            selectedExtraPdfs = [];
+            updateExtraPdfsUI();
+            logEl.textContent = "🗑️ Todos los PDFs extra han sido eliminados.";
+        }
+    }
+
+    function updateTemplatesUI() {
+        const templatesList = document.getElementById("templatesList");
+        const templateCount = document.getElementById("templateCount");
+
+        templateCount.textContent = selectedTemplates.length;
+
+        if (selectedTemplates.length === 0) {
+            templatesList.innerHTML = `
+                    <div id="noTemplates" class="text-center py-6 text-gray-500">
+                        <i data-lucide="file-plus" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                        <p>No hay plantillas seleccionadas</p>
+                    </div>
+                `;
+            lucide.createIcons();
+            return;
+        }
+
+        let listHTML = '<div class="space-y-3">';
+
+        selectedTemplates.forEach((template, index) => {
+            const fileName = template.split(/[\\/]/).pop();
+            listHTML += `
+                    <div class="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <div class="flex items-center space-x-3 flex-1 min-w-0">
+                            <div class="bg-purple-100 p-2 rounded-lg">
+                                <i data-lucide="file-text" class="w-4 h-4 text-purple-600"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="font-medium text-gray-900 truncate">${fileName}</p>
+                                <p class="text-xs text-gray-500 truncate">${template}</p>
+                            </div>
+                        </div>
+                        <button onclick="removeTemplate(${index})"
+                                class="ml-3 bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-lg transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+        });
+
+        listHTML += '</div>';
+        templatesList.innerHTML = listHTML;
+        lucide.createIcons();
+    }
+
+    function removeTemplate(index) {
+        selectedTemplates.splice(index, 1);
+        updateTemplatesUI();
+
+        logEl.textContent = `🗑️ Plantilla eliminada. Total: ${selectedTemplates.length} plantillas`;
+
+        if (selectedTemplates.length === 0) {
+            logEl.textContent += "\n📝 Agrega al menos una plantilla para continuar.";
+        }
+    }
+
+    function clearAllTemplates() {
+        if (selectedTemplates.length === 0) {
+            logEl.textContent = "⚠️ No hay plantillas para limpiar.";
+            return;
+        }
+
+        const confirmed = confirm(`¿Estás seguro de eliminar todas las ${selectedTemplates.length} plantillas seleccionadas?`);
+        if (confirmed) {
+            selectedTemplates = [];
+            updateTemplatesUI();
+            logEl.textContent = "🗑️ Todas las plantillas han sido eliminadas.";
+        }
+    }
+
+    // Event Listeners
+    document.getElementById("btnBaseFolder").addEventListener("click", async () => {
+        const result = await window.electronAPI.selectBaseFolder();
+        baseFolder = result?.basePath || null;
+        baseFolderEl.textContent = baseFolder || "Ninguna seleccionada";
+
+        if (baseFolder) {
+            logEl.textContent = `📂 Nueva carpeta seleccionada: ${baseFolder}`;
+            if (result.created && result.created.length > 0) {
+                logEl.textContent += `\n📁 Subcarpetas creadas: ${result.created.join(", ")}`;
+            }
+            logEl.textContent += `\n💾 Carpeta guardada para próximas sesiones.`;
+
+            await window.electronAPI.saveConfig({ baseFolder: baseFolder });
+        }
+    });
+
+    document.getElementById("btnExcel").addEventListener("click", async () => {
+        excelFile = await window.electronAPI.selectExcel();
+        excelFileEl.textContent = excelFile ? excelFile.split(/[\\/]/).pop() : "Ninguno seleccionado";
+
+        if (excelFile) {
+            logEl.textContent = "📊 Cargando Excel...";
+            const data = await window.electronAPI.readExcel(excelFile);
+
+            if (data.error) {
+                logEl.textContent = `❌ Error cargando Excel: ${data.error}`;
+            } else {
+                renderPreview(data.headers, data.previewRows);
+                logEl.textContent = `✅ Excel cargado correctamente.\n📈 ${data.totalRows} filas de datos encontradas.`;
+
+                const emailColumnSelect = document.getElementById("emailColumn");
+                emailColumnSelect.innerHTML = '<option value="">Seleccionar columna...</option>';
+                data.headers.forEach((header, idx) => {
+                    const opt = document.createElement("option");
+                    opt.value = header;
+                    opt.textContent = header;
+                    emailColumnSelect.appendChild(opt);
+                });
+            }
+        }
+    });
+
+    document.getElementById("btnDocx").addEventListener("click", async () => {
+        try {
+            const newTemplate = await window.electronAPI.selectSingleDocx();
+
+            if (newTemplate) {
+                if (selectedTemplates.includes(newTemplate)) {
+                    logEl.textContent = "⚠️ Esta plantilla ya está agregada.";
+                    return;
+                }
+
+                selectedTemplates.push(newTemplate);
+                updateTemplatesUI();
+
+                const fileName = newTemplate.split(/[\\/]/).pop();
+                logEl.textContent = `✅ Plantilla agregada: ${fileName}\n📊 Total: ${selectedTemplates.length} plantillas`;
+
+                if (selectedTemplates.length === 1) {
+                    logEl.textContent += "\n💡 Puedes agregar más plantillas o continuar con la generación.";
+                }
+            }
+        } catch (error) {
+            logEl.textContent = `❌ Error agregando plantilla: ${error.message}`;
+        }
+    });
+
+    document.getElementById("btnClearTemplates").addEventListener("click", () => {
+        clearAllTemplates();
+    });
+
+    document.getElementById("btnAddExtraPdf").addEventListener("click", async () => {
+        try {
+            const newPdfs = await window.electronAPI.selectExtraPdfs();
+
+            if (newPdfs && newPdfs.length > 0) {
+                let addedCount = 0;
+                let duplicateCount = 0;
+
+                newPdfs.forEach(pdfPath => {
+                    if (!selectedExtraPdfs.includes(pdfPath)) {
+                        selectedExtraPdfs.push(pdfPath);
+                        addedCount++;
+                    } else {
+                        duplicateCount++;
+                    }
+                });
+
+                updateExtraPdfsUI();
+
+                let message;
+                if (addedCount === 1) {
+                    const fileName = newPdfs[0].split(/[\\/]/).pop();
+                    message = `✅ PDF agregado: ${fileName}\n📊 Total: ${selectedExtraPdfs.length} PDFs extra`;
+                } else {
+                    message = `✅ ${addedCount} PDFs agregados correctamente.\n📊 Total: ${selectedExtraPdfs.length} PDFs extra`;
+                }
+
+                if (duplicateCount > 0) {
+                    message += `\n⚠️ ${duplicateCount} archivos omitidos (ya estaban agregados)`;
+                }
+
+                if (selectedExtraPdfs.length === addedCount && addedCount > 0) {
+                    message += "\n💡 Estos PDFs se adjuntarán a todos los correos que envíes.";
+                }
+
+                logEl.textContent = message;
+            }
+        } catch (error) {
+            logEl.textContent = `❌ Error agregando PDFs: ${error.message}`;
+        }
+    });
+
+    document.getElementById("btnClearExtraPdfs").addEventListener("click", () => {
+        clearAllExtraPdfs();
+    });
+
+    document.getElementById("btnSaveSMTP").addEventListener("click", async () => {
+        const smtpConfig = {
+            host: document.getElementById("smtpHost").value,
+            port: parseInt(document.getElementById("smtpPort").value, 10),
+            secure: document.getElementById("smtpSecure").value === "true",
+            user: document.getElementById("smtpUser").value,
+            pass: document.getElementById("smtpPass").value
+        };
+
+        await window.electronAPI.saveSmtpConfig(smtpConfig);
+
+        if (!appConfig) appConfig = {};
+        appConfig.smtpConfig = smtpConfig;
+
+        logEl.textContent = `✅ Configuración SMTP guardada y recordada:\nServidor: ${smtpConfig.host}:${smtpConfig.port}\nUsuario: ${smtpConfig.user}`;
+    });
+
+    document.getElementById("btnGenerate").addEventListener("click", async () => {
+        if (!baseFolder || !excelFile || !selectedTemplates || selectedTemplates.length === 0) {
+            logEl.textContent = "⚠️ ERROR: Faltan elementos por seleccionar:\n" +
+                `${!baseFolder ? "❌ Carpeta base\n" : ""}` +
+                `${!excelFile ? "❌ Archivo Excel\n" : ""}` +
+                `${!selectedTemplates || selectedTemplates.length === 0 ? "❌ Al menos una plantilla DOCX\n" : ""}`;
+            return;
+        }
+
+        if (!libreOfficeStatus.available) {
+            const tryAgain = confirm(
+                "❌ LibreOffice no está configurado.\n\n" +
+                "Sin LibreOffice no se pueden generar PDFs con el formato original.\n\n" +
+                "¿Quieres intentar detectarlo de nuevo?"
+            );
+
+            if (tryAgain) {
+                await checkLibreOfficeStatus();
+                return;
+            } else {
+                logEl.textContent = "❌ Generación cancelada. Configura LibreOffice primero.";
+                return;
+            }
+        }
+
+        window.electronAPI.onPdfProgress((progress) => {
+            const percentage = Math.round((progress.current / progress.total) * 100);
+            logEl.textContent = `⏳ Generando PDFs... ${percentage}%\n` +
+                `📄 Procesando ${progress.current}/${progress.total}: ${progress.fileName}\n\n` +
+                `🔧 Usando LibreOffice: ${libreOfficeStatus.path}`;
+        });
+
+        logEl.textContent = `🚀 Iniciando generación de PDFs...\n⏳ Esto puede tomar unos minutos...\n\n` +
+            `📝 ${selectedTemplates.length} plantillas × personas = múltiples PDFs\n` +
+            `🔧 LibreOffice: ${libreOfficeStatus.path}`;
+
+        try {
+            const result = await window.electronAPI.generatePdfsLibreOffice({
+                baseFolder,
+                excelFile,
+                docxFile: selectedTemplates
+            });
+
+            if (result.success) {
+                logEl.textContent = `🎉 ¡GENERACIÓN COMPLETADA EXITOSAMENTE!\n\n` +
+                    `✅ ${result.total} PDFs generados con formato original\n` +
+                    `📁 Ubicación: ${baseFolder}\\salida\n\n`;
+
+                if (result.files && result.files.length > 0) {
+                    const firstFiles = result.files.slice(0, 3).map(f => f.split(/[\\/]/).pop());
+                    logEl.textContent += `📄 Archivos: ${firstFiles.join(", ")}`;
+                    if (result.files.length > 3) {
+                        logEl.textContent += ` y ${result.files.length - 3} más...`;
+                    }
+                }
+
+                logEl.textContent += `\n\n🎯 Los PDFs mantienen el formato exacto de tus plantillas DOCX.`;
+
+                logEl.classList.add('text-green-400');
+            } else {
+                logEl.textContent = `❌ ERROR EN LA GENERACIÓN:\n\n${result.error}\n\n` +
+                    `🔧 Posibles soluciones:\n` +
+                    `• Verifica que las variables en la plantilla sean como {nombre}\n` +
+                    `• Asegúrate que las columnas del Excel coincidan\n` +
+                    `• Cierra archivos abiertos en la carpeta de salida\n` +
+                    `• Verifica permisos de escritura en la carpeta\n` +
+                    `• Reinicia LibreOffice si está abierto`;
+
+                logEl.classList.add('text-red-400');
+            }
+        } catch (error) {
+            logEl.textContent = `❌ ERROR CRÍTICO:\n\n${error.message}\n\n` +
+                `🚨 Acciones recomendadas:\n` +
+                `• Reinicia la aplicación\n` +
+                `• Verifica que LibreOffice funcione correctamente\n` +
+                `• Contacta soporte técnico si persiste`;
+            console.error("Error completo:", error);
+
+            logEl.classList.add('text-red-400');
+        } finally {
+            window.electronAPI.removeAllListeners();
+
+            setTimeout(() => {
+                logEl.classList.remove('text-green-400', 'text-red-400');
+            }, 10000);
+        }
+    });
+
+    document.getElementById("btnGenerateAndSend").addEventListener("click", async () => {
+        if (!baseFolder || !excelFile || !selectedTemplates || selectedTemplates.length === 0) {
+            logEl.textContent = "⚠️ ERROR: Faltan elementos por seleccionar:\n" +
+                `${!baseFolder ? "❌ Carpeta base\n" : ""}` +
+                `${!excelFile ? "❌ Archivo Excel\n" : ""}` +
+                `${!selectedTemplates || selectedTemplates.length === 0 ? "❌ Al menos una plantilla DOCX\n" : ""}`;
+            return;
+        }
+
+        const emailColumn = document.getElementById("emailColumn").value;
+        const subject = document.getElementById("emailSubject").value || "Documento generado";
+        const body = document.getElementById("emailBody").value || "Adjunto encontrarás tus documentos.";
+
+        if (!emailColumn) {
+            logEl.textContent = "⚠️ ERROR: Selecciona la columna de correos antes de enviar.";
+            return;
+        }
+
+        if (!libreOfficeStatus.available) {
+            const tryAgain = confirm(
+                "❌ LibreOffice no está configurado.\n\n" +
+                "Sin LibreOffice no se pueden generar PDFs.\n\n" +
+                "¿Quieres intentar detectarlo de nuevo?"
+            );
+
+            if (tryAgain) {
+                await checkLibreOfficeStatus();
+                return;
+            } else {
+                logEl.textContent = "❌ Proceso cancelado. Configura LibreOffice primero.";
+                return;
+            }
+        }
+
+        const excelData = await window.electronAPI.readExcel(excelFile);
+        const totalPersonas = excelData.totalRows || 0;
+        const totalPdfs = totalPersonas * selectedTemplates.length;
+
+        const confirmed = confirm(
+            `🚀 PROCESO INTEGRADO: Generar + Enviar\n\n` +
+            `📊 Resumen:\n` +
+            `• ${totalPersonas} personas\n` +
+            `• ${selectedTemplates.length} plantillas\n` +
+            `• ${totalPdfs} PDFs a generar\n` +
+            `• ${selectedExtraPdfs.length} PDFs extra por correo\n\n` +
+            `⏱️ Tiempo estimado: ${Math.ceil(totalPersonas / 60)} - ${Math.ceil(totalPersonas / 30)} minutos\n\n` +
+            `¿Continuar con el proceso completo?`
+        );
+
+        if (!confirmed) {
+            logEl.textContent = "❌ Proceso cancelado por el usuario.";
+            return;
+        }
+
+        window.electronAPI.onIntegratedProgress((progress) => {
+            if (progress.phase === 'generating') {
+                const percentage = Math.round((progress.current / progress.total) * 100);
+                logEl.textContent = `📄 GENERANDO PDFs... ${percentage}%\n` +
+                    `⏳ Procesando: ${progress.person}\n` +
+                    `📝 Plantilla: ${progress.template}\n` +
+                    `📊 Progreso: ${progress.current}/${progress.total}\n\n` +
+                    `🔧 LibreOffice: ${libreOfficePath}`;
+            } else if (progress.phase === 'sending') {
+                const percentage = Math.round((progress.current / progress.total) * 100);
+                logEl.textContent = `📨 ENVIANDO CORREOS... ${percentage}%\n` +
+                    `📧 Enviando a: ${progress.email}\n` +
+                    `📎 Adjuntos: ${progress.attachments}\n` +
+                    `📊 Progreso: ${progress.current}/${progress.total}`;
+            }
+        });
+
+        logEl.textContent = `🚀 INICIANDO PROCESO INTEGRADO...\n\n` +
+            `📋 FASE 1: Generando ${totalPdfs} PDFs...\n` +
+            `📨 FASE 2: Enviando ${totalPersonas} correos...\n` +
+            `💾 FASE 3: Guardando archivos...\n\n` +
+            `⏳ Esto puede tomar varios minutos, por favor espera...`;
+
+        try {
+            const result = await window.electronAPI.generateAndSendIntegrated({
+                baseFolder,
+                excelFile,
+                docxFile: selectedTemplates,
+                emailColumn,
+                subject,
+                body,
+                extraFiles: selectedExtraPdfs
+            });
+
+            if (result.success) {
+                logEl.textContent = `🎉 ¡PROCESO COMPLETADO EXITOSAMENTE!\n\n` +
+                    `✅ Resultados:\n` +
+                    `📨 ${result.enviados} correos enviados\n` +
+                    `📄 ${result.pdfGenerados} PDFs generados y guardados\n` +
+                    `👥 ${result.totalPersonas} personas procesadas\n\n`;
+
+                if (result.erroresEnvio > 0) {
+                    logEl.textContent += `⚠️ ${result.erroresEnvio} errores de envío (ver consola para detalles)\n`;
+                }
+
+                logEl.textContent += `📁 Archivos guardados en: ${baseFolder}\\salida\n\n` +
+                    `🎯 Todos los PDFs se generaron y enviaron automáticamente.`;
+
+                logEl.classList.add('text-green-400');
+            } else {
+                logEl.textContent = `❌ ERROR EN EL PROCESO INTEGRADO:\n\n${result.error}\n\n`;
+
+                if (result.enviados > 0) {
+                    logEl.textContent += `✅ Correos enviados antes del error: ${result.enviados}\n\n`;
+                }
+
+                logEl.textContent += `🔧 Posibles soluciones:\n` +
+                    `• Verifica configuración SMTP\n` +
+                    `• Asegúrate que LibreOffice funcione correctamente\n` +
+                    `• Revisa que las variables en plantillas sean {nombre}\n` +
+                    `• Verifica conexión a internet\n` +
+                    `• Cierra archivos abiertos en carpeta salida`;
+
+                logEl.classList.add('text-red-400');
+            }
+        } catch (error) {
+            logEl.textContent = `❌ ERROR CRÍTICO EN PROCESO INTEGRADO:\n\n${error.message}\n\n` +
+                `🚨 Acciones recomendadas:\n` +
+                `• Reinicia la aplicación\n` +
+                `• Verifica configuración completa\n` +
+                `• Contacta soporte técnico si persiste`;
+            console.error("Error completo:", error);
+
+            logEl.classList.add('text-red-400');
+        } finally {
+            window.electronAPI.removeAllListeners();
+
+            setTimeout(() => {
+                logEl.classList.remove('text-green-400', 'text-red-400');
+            }, 10000);
+        }
+    });
+
+    function renderPreview(headers, rows) {
+        const headersEl = document.getElementById("previewHeaders");
+        const bodyEl = document.getElementById("previewBody");
+        const noPreviewEl = document.getElementById("noPreview");
+
+        headersEl.innerHTML = "";
+        bodyEl.innerHTML = "";
+        noPreviewEl.style.display = "none";
+
+        if (!headers || headers.length === 0) {
+            noPreviewEl.style.display = "block";
+            noPreviewEl.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-3 text-red-300"></i>
+                        <p>❌ No se encontraron columnas en el Excel.</p>
+                    </div>
+                `;
+            lucide.createIcons();
+            return;
+        }
+
+        const headerRow = document.createElement("tr");
+        headers.forEach((header, index) => {
+            const th = document.createElement("th");
+            th.textContent = header || `Columna ${index + 1}`;
+            th.className = "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50";
+            headerRow.appendChild(th);
+        });
+        headersEl.appendChild(headerRow);
+
+        if (!rows || rows.length === 0) {
+            const noDataRow = document.createElement("tr");
+            const noDataCell = document.createElement("td");
+            noDataCell.colSpan = headers.length;
+            noDataCell.innerHTML = `
+                    <div class="text-center py-6 text-gray-500">
+                        <i data-lucide="alert-triangle" class="w-8 h-8 mx-auto mb-2 text-yellow-300"></i>
+                        <p>⚠️ No hay datos para mostrar en la vista previa</p>
+                    </div>
+                `;
+            noDataCell.className = "px-6 py-4 text-center";
+            noDataRow.appendChild(noDataCell);
+            bodyEl.appendChild(noDataRow);
+            lucide.createIcons();
+            return;
+        }
+
+        rows.forEach((row, rowIndex) => {
+            const tr = document.createElement("tr");
+            tr.className = rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50";
+
+            headers.forEach((header, colIndex) => {
+                const td = document.createElement("td");
+                const cellValue = row[colIndex];
+                td.textContent = cellValue !== null && cellValue !== undefined ? String(cellValue) : "";
+                td.className = "px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs truncate";
+                td.title = td.textContent;
+                tr.appendChild(td);
+            });
+
+            bodyEl.appendChild(tr);
+        });
+
+        if (rows.length >= 5) {
+            const infoRow = document.createElement("tr");
+            const infoCell = document.createElement("td");
+            infoCell.colSpan = headers.length;
+            infoCell.innerHTML = `
+                    <div class="text-center py-3 text-gray-500 bg-blue-50">
+                        <div class="flex items-center justify-center space-x-2">
+                            <i data-lucide="info" class="w-4 h-4 text-blue-600"></i>
+                            <span class="text-sm">📋 Mostrando solo las primeras 5 filas como vista previa</span>
+                        </div>
+                    </div>
+                `;
+            infoRow.appendChild(infoCell);
+            bodyEl.appendChild(infoRow);
+            lucide.createIcons();
+        }
+    }
+    class StickyTerminalManager {
+        constructor() {
+            this.stickyTerminal = document.getElementById('stickyTerminal');
+            this.mainTerminal = document.getElementById('mainTerminal');
+            this.logEl = document.getElementById('log');
+            this.stickyLogEl = document.getElementById('stickyLog');
+            this.activityIndicator = document.getElementById('activityIndicator');
+            this.scrollIndicator = document.getElementById('scrollIndicator');
+
+            this.isSticky = false;
+            this.stickyEnabled = true;
+            this.isMinimized = false;
+
+            this.init();
+        }
+
+        init() {
+            // Observador de intersección para detectar cuando el terminal principal está visible
+            this.setupIntersectionObserver();
+
+            // Event listeners para controles
+            this.setupEventListeners();
+
+            // Sincronizar logs
+            this.syncLogs();
+
+            // Detectar scroll para mostrar indicador de nuevos mensajes
+            this.setupScrollDetection();
+        }
+
+        setupIntersectionObserver() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (this.stickyEnabled) {
+                        if (entry.isIntersecting) {
+                            this.hideStickyTerminal();
+                        } else {
+                            this.showStickyTerminal();
+                        }
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '-100px 0px 0px 0px'
+            });
+
+            observer.observe(this.mainTerminal);
+        }
+
+        setupEventListeners() {
+            // Controles del terminal sticky
+            document.getElementById('closeStickyTerminal').addEventListener('click', () => {
+                this.disableStickyMode();
+            });
+
+            document.getElementById('minimizeStickyTerminal').addEventListener('click', () => {
+                this.toggleMinimize();
+            });
+
+            document.getElementById('expandStickyTerminal').addEventListener('click', () => {
+                this.scrollToMainTerminal();
+            });
+
+            // Controles del terminal principal
+            document.getElementById('clearLog').addEventListener('click', () => {
+                this.clearLogs();
+            });
+
+            document.getElementById('copyLog').addEventListener('click', () => {
+                this.copyLogToClipboard();
+            });
+
+            document.getElementById('toggleStickyMode').addEventListener('click', () => {
+                this.toggleStickyMode();
+            });
+
+            // Observador de mutaciones para sincronizar logs
+            const observer = new MutationObserver(() => {
+                this.syncLogs();
+                this.showScrollIndicator();
+            });
+
+            observer.observe(this.logEl, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
+
+        setupScrollDetection() {
+            const logContainer = this.logEl;
+
+            logContainer.addEventListener('scroll', () => {
+                const isScrolledToBottom = logContainer.scrollHeight - logContainer.clientHeight <= logContainer.scrollTop + 1;
+
+                if (isScrolledToBottom) {
+                    this.hideScrollIndicator();
+                }
+            });
+        }
+
+        showStickyTerminal() {
+            if (!this.isSticky && this.stickyEnabled) {
+                this.isSticky = true;
+                this.stickyTerminal.style.opacity = '1';
+                this.stickyTerminal.style.transform = 'translateY(0)';
+                this.stickyTerminal.style.pointerEvents = 'auto';
+
+                // Efecto de entrada suave
+                this.stickyTerminal.classList.add('animate-pulse');
+                setTimeout(() => {
+                    this.stickyTerminal.classList.remove('animate-pulse');
+                }, 1000);
+            }
+        }
+
+        hideStickyTerminal() {
+            if (this.isSticky) {
+                this.isSticky = false;
+                this.stickyTerminal.style.opacity = '0';
+                this.stickyTerminal.style.transform = 'translateY(-20px)';
+                this.stickyTerminal.style.pointerEvents = 'none';
+            }
+        }
+
+        toggleMinimize() {
+            this.isMinimized = !this.isMinimized;
+            const content = this.stickyTerminal.querySelector('.p-3');
+
+            if (this.isMinimized) {
+                content.style.display = 'none';
+                this.stickyTerminal.style.width = '250px';
+            } else {
+                content.style.display = 'block';
+                this.stickyTerminal.style.width = '24rem';
+            }
+        }
+
+        scrollToMainTerminal() {
+            this.mainTerminal.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+
+            // Efecto de destacado
+            this.mainTerminal.classList.add('ring-4', 'ring-blue-500', 'ring-opacity-50');
+            setTimeout(() => {
+                this.mainTerminal.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-50');
+            }, 2000);
+        }
+
+        disableStickyMode() {
+            this.stickyEnabled = false;
+            this.hideStickyTerminal();
+
+            const toggleBtn = document.getElementById('toggleStickyMode');
+            toggleBtn.innerHTML = '<i data-lucide="pin-off" class="w-4 h-4"></i>';
+            toggleBtn.title = 'Activar modo sticky';
+            lucide.createIcons();
+        }
+
+        toggleStickyMode() {
+            this.stickyEnabled = !this.stickyEnabled;
+
+            const toggleBtn = document.getElementById('toggleStickyMode');
+
+            if (this.stickyEnabled) {
+                toggleBtn.innerHTML = '<i data-lucide="pin" class="w-4 h-4"></i>';
+                toggleBtn.title = 'Desactivar modo sticky';
+                toggleBtn.classList.add('text-green-400');
+            } else {
+                toggleBtn.innerHTML = '<i data-lucide="pin-off" class="w-4 h-4"></i>';
+                toggleBtn.title = 'Activar modo sticky';
+                toggleBtn.classList.remove('text-green-400');
+                this.hideStickyTerminal();
+            }
+
+            lucide.createIcons();
+        }
+
+        syncLogs() {
+            this.stickyLogEl.textContent = this.logEl.textContent;
+
+            // Auto scroll al final
+            this.stickyLogEl.scrollTop = this.stickyLogEl.scrollHeight;
+            this.logEl.scrollTop = this.logEl.scrollHeight;
+        }
+
+        showActivityIndicator() {
+            this.activityIndicator.classList.remove('hidden');
+        }
+
+        hideActivityIndicator() {
+            this.activityIndicator.classList.add('hidden');
+        }
+
+        showScrollIndicator() {
+            if (!this.isLogScrolledToBottom()) {
+                this.scrollIndicator.style.opacity = '1';
+                setTimeout(() => {
+                    this.scrollIndicator.style.opacity = '0';
+                }, 3000);
+            }
+        }
+
+        hideScrollIndicator() {
+            this.scrollIndicator.style.opacity = '0';
+        }
+
+        isLogScrolledToBottom() {
+            const container = this.logEl;
+            return container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
+        }
+
+        clearLogs() {
+            const confirmed = confirm('¿Estás seguro de limpiar todo el historial del sistema?');
+            if (confirmed) {
+                this.logEl.textContent = 'Log limpiado. Listo para nuevas operaciones.';
+                this.syncLogs();
+            }
+        }
+
+        async copyLogToClipboard() {
+            try {
+                await navigator.clipboard.writeText(this.logEl.textContent);
+
+                const copyBtn = document.getElementById('copyLog');
+                copyBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>';
+                copyBtn.classList.add('text-green-400');
+
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i>';
+                    copyBtn.classList.remove('text-green-400');
+                    lucide.createIcons();
+                }, 2000);
+
+            } catch (err) {
+                console.error('Error copiando al portapapeles:', err);
+            }
+        }
+
+        // Método público para mostrar actividad durante procesos largos
+        showProcessingState(message = 'Procesando...') {
+            this.showActivityIndicator();
+            this.activityIndicator.querySelector('span').textContent = message;
+        }
+
+        hideProcessingState() {
+            this.hideActivityIndicator();
+        }
+    }
+</script>
+</body>
+</html>
+

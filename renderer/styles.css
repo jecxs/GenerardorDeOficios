@@ -1,0 +1,106 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f4f4f9;
+}
+
+h1 {
+    color: #333;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    background: #0078d7;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background: #005a9e;
+}
+
+pre {
+    background: #222;
+    color: #0f0;
+    padding: 10px;
+    border-radius: 6px;
+    height: 150px;
+    overflow-y: auto;
+}
+.template-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin: 5px 0;
+    background-color: white;
+    border-radius: 3px;
+    border: 1px solid #e9ecef;
+    transition: background-color 0.2s;
+}
+
+.template-item:hover {
+    background-color: #f8f9fa;
+}
+
+.template-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.template-path {
+    color: #666;
+    padding: 0 10px;
+    font-size: 0.85em;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.template-remove-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.template-remove-btn:hover {
+    background-color: #c82333;
+}
+
+.templates-container {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    min-height: 50px;
+}
+
+.templates-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-clear-templates {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-clear-templates:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
