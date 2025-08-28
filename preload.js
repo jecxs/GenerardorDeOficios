@@ -26,7 +26,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     // Seleccionar LibreOffice manualmente
     selectLibreOffice: () => ipcRenderer.invoke("select-libreoffice"),
 
-    // 🔥 NUEVAS FUNCIONES para configuración persistente
+
     loadConfig: () => ipcRenderer.invoke("load-config"),
     saveConfig: (config) => ipcRenderer.invoke("save-config", config),
 
