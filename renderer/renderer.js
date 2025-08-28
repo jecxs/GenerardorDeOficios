@@ -659,8 +659,22 @@ document.getElementById("btnGenerateAndSend").addEventListener("click", async ()
         return;
     }
 
+    let erroresEnTiempoReal = [];
+    let ultimoFeedback = Date.now();
+    let feedbackTimeout;
+
+    // Función para mostrar advertencia si tarda mucho
+    function startFeedbackTimeout() {
+        clearTimeout(feedbackTimeout);
+        feedbackTimeout = setTimeout(() => {
+            logEl.textContent += "\n⏳ El proceso sigue en curso... Si tienes muchos destinatarios o tu conexión es lenta, esto puede tardar varios minutos más.";
+        }, 60000); // 1 minuto sin feedback
+    }
+
     // Configurar listeners de progreso
     window.electronAPI.onIntegratedProgress((progress) => {
+        ultimoFeedback = Date.now();
+        startFeedbackTimeout();
         if (progress.phase === 'generating') {
             const percentage = Math.round((progress.current / progress.total) * 100);
             logEl.textContent = `📄 GENERANDO PDFs... ${percentage}%\n` +
@@ -674,6 +688,11 @@ document.getElementById("btnGenerateAndSend").addEventListener("click", async ()
                 `📧 Enviando a: ${progress.email}\n` +
                 `📎 Adjuntos: ${progress.attachments}\n` +
                 `📊 Progreso: ${progress.current}/${progress.total}`;
+        } else if (progress.phase === 'error') {
+            // Mostrar error de envío en tiempo real
+            erroresEnTiempoReal.push(progress);
+            let erroresMostrados = erroresEnTiempoReal.slice(-5).map(e => `❌ Error a ${e.email}: ${e.error}`).join("\n");
+            logEl.textContent = `⚠️ Error de envío:\n${erroresMostrados}\n\n` + logEl.textContent;
         }
     });
 
@@ -683,6 +702,7 @@ document.getElementById("btnGenerateAndSend").addEventListener("click", async ()
         `📨 FASE 2: Enviando ${totalPersonas} correos...\n` +
         `💾 FASE 3: Guardando archivos...\n\n` +
         `⏳ Esto puede tomar varios minutos, por favor espera...`;
+    startFeedbackTimeout();
 
     try {
         const result = await window.electronAPI.generateAndSendIntegrated({
@@ -694,6 +714,7 @@ document.getElementById("btnGenerateAndSend").addEventListener("click", async ()
             body,
             extraFiles: selectedExtraPdfs
         });
+        clearTimeout(feedbackTimeout);
 
         if (result.success) {
             logEl.textContent = `🎉 ¡PROCESO COMPLETADO EXITOSAMENTE!\n\n` +
@@ -703,7 +724,18 @@ document.getElementById("btnGenerateAndSend").addEventListener("click", async ()
                 `👥 ${result.totalPersonas} personas procesadas\n\n`;
 
             if (result.erroresEnvio > 0) {
-                logEl.textContent += `⚠️ ${result.erroresEnvio} errores de envío (ver consola para detalles)\n`;
+                logEl.textContent += `⚠️ ${result.erroresEnvio} errores de envío.\n`;
+                if (result.erroresDetalle && result.erroresDetalle.length > 0) {
+                    logEl.textContent += `\nErrores detallados (máx 10):\n`;
+                    result.erroresDetalle.forEach(e => {
+                        logEl.textContent += `• ${e.email}: ${e.error}\n`;
+                    });
+                    if (result.erroresEnvio > 10) {
+                        logEl.textContent += `...y ${result.erroresEnvio - 10} errores más.\n`;
+                    }
+                }
+                // Mostrar enlace al log de errores
+                logEl.textContent += `\n📄 Revisa el archivo de errores: salida/errores_envio.txt`;
             }
 
             logEl.textContent += `📁 Archivos guardados en: ${baseFolder}\\salida\n\n` +
@@ -735,6 +767,7 @@ document.getElementById("btnGenerateAndSend").addEventListener("click", async ()
         }
 
     } catch (error) {
+        clearTimeout(feedbackTimeout);
         logEl.textContent = `❌ ERROR CRÍTICO EN PROCESO INTEGRADO:\n\n${error.message}\n\n` +
             `🚨 Acciones recomendadas:\n` +
             `• Reinicia la aplicación\n` +
@@ -749,7 +782,7 @@ document.getElementById("btnGenerateAndSend").addEventListener("click", async ()
     } finally {
         // Limpiar listeners
         window.electronAPI.removeAllListeners();
-
+        clearTimeout(feedbackTimeout);
         // Restaurar estilo después de 10 segundos
         setTimeout(() => {
             logEl.style.backgroundColor = "";

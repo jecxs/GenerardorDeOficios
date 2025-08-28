@@ -688,6 +688,27 @@ ipcMain.handle("generate-and-send-integrated", async (event, { baseFolder, excel
             } catch (emailError) {
                 console.error(`❌ Error enviando a ${email}:`, emailError.message);
                 erroresEnvio.push({ email, error: emailError.message });
+                // Notificar error en tiempo real al frontend
+                event.sender.send('integrated-progress', {
+                    phase: 'error',
+                    email: email,
+                    error: emailError.message
+                });
+            }
+        }
+
+        // Guardar log de errores si hubo fallos
+        let erroresDetalle = [];
+        if (erroresEnvio.length > 0) {
+            erroresDetalle = erroresEnvio.map(e => `Correo: ${e.email} | Error: ${e.error}`);
+            try {
+                fs.writeFileSync(
+                    path.join(salidaPath, 'errores_envio.txt'),
+                    erroresDetalle.join('\n'),
+                    'utf8'
+                );
+            } catch (err) {
+                console.error('No se pudo guardar el log de errores:', err.message);
             }
         }
 
@@ -713,6 +734,8 @@ ipcMain.handle("generate-and-send-integrated", async (event, { baseFolder, excel
             totalPersonas: personaPdfBuffers.size,
             pdfGenerados: generatedFiles.length,
             erroresEnvio: erroresEnvio.length,
+            erroresDetalle: erroresEnvio.slice(0, 10), // Máximo 10 detalles para frontend
+            erroresTotales: erroresEnvio.length,
             files: generatedFiles
         };
 
@@ -770,3 +793,4 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") app.quit();
 });
+
